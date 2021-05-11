@@ -10,19 +10,24 @@ import java.net.URL
 import java.util.*
 import kotlin.concurrent.thread
 
+sealed class APIQuery {
+    class Location(val latitude: Double, val longitude: Double) : APIQuery()
+    class Name(val name: String) : APIQuery()
+}
+
 private fun createAPIURL(query: String, apiKey: String) =
     "https://api.openweathermap.org/data/2.5/weather?$query&units=metric&appid=$apiKey"
 
-private fun callApi(urlString: String): APIResponse =
-    ObjectMapper().readValue(URL(urlString), APIResponse::class.java)
+private fun callApi(urlString: String): WeatherAPIResponse =
+    ObjectMapper().readValue(URL(urlString), WeatherAPIResponse::class.java)
 
-private fun createQueryString(location: APILocation) =
-    when (location) {
-        is APILocation.Location -> "lat=${location.latitude}&lon=${location.longitude}"
-        is APILocation.Name -> "q=${location.name.toLowerCase(Locale.ROOT)}"
+private fun createQueryString(apiQuery: APIQuery) =
+    when (apiQuery) {
+        is APIQuery.Location -> "lat=${apiQuery.latitude}&lon=${apiQuery.longitude}"
+        is APIQuery.Name -> "q=${apiQuery.name.lowercase(Locale.ROOT)}"
     }
 
-private fun tryGetIcon(response: APIResponse): Bitmap? {
+private fun tryGetIcon(response: WeatherAPIResponse): Bitmap? {
     val weatherAttr = response.weather?.get(0)
     return if (weatherAttr != null) {
         try {
@@ -37,9 +42,9 @@ private fun tryGetIcon(response: APIResponse): Bitmap? {
     }
 }
 
-fun getWeatherAsync(context: Activity, location: APILocation, callback: (Weather) -> Unit) {
+fun getWeatherAsync(context: Activity, apiQuery: APIQuery, callback: (Weather) -> Unit) {
     thread {
-        val query = createQueryString(location)
+        val query = createQueryString(apiQuery)
         val apiKey = context.getString(R.string.openweathermap_api_key)
         val response = callApi(createAPIURL(query, apiKey))
         val icon = tryGetIcon(response)

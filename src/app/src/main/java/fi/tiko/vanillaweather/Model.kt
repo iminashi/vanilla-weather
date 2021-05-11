@@ -3,35 +3,57 @@ package fi.tiko.vanillaweather
 import android.graphics.Bitmap
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-sealed class APILocation {
-    class Location(val latitude: Double, val longitude: Double) : APILocation()
-    class Name(val name: String) : APILocation()
-}
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Coordinates(
+    val lon: Double? = null,
+    val lat: Double? = null,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WeatherAttributes(
-    var main: String? = null,
-    var description: String? = null,
-    var icon: String? = null
+    val main: String? = null,
+    val description: String? = null,
+    val icon: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class WindAttributes(var speed: Double? = null)
+data class WindAttributes(val speed: Double? = null)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class MainAttributes(
-    var temp: Double? = null,
-    var feels_like: Double? = null,
-    var humidity: Double? = null
+    val temp: Double? = null,
+    val feels_like: Double? = null,
+    val humidity: Double? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class APIResponse(
-    var name: String? = null,
-    var dt: Long? = null,
-    var weather: MutableList<WeatherAttributes>? = null,
-    var main: MainAttributes? = null,
-    var wind: WindAttributes? = null
+data class WeatherAPIResponse(
+    val coord: Coordinates? = null,
+    val name: String? = null,
+    val dt: Long? = null,
+    val weather: MutableList<WeatherAttributes>? = null,
+    val main: MainAttributes? = null,
+    val wind: WindAttributes? = null
 )
 
-data class Weather(var response: APIResponse, var icon: Bitmap? = null)
+data class Weather(val response: WeatherAPIResponse, val icon: Bitmap? = null)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DailyTemp(val min: Double? = null, val max: Double? = null)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DailyForecast(
+    val dt: Long? = null,
+    val temp: DailyTemp? = null,
+    val weather: MutableList<WeatherAttributes>? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ForecastAPIResponse(
+    val daily: MutableList<DailyForecast>? = null
+)
+
+data class ForecastWeather(
+    val forecast: DailyForecast,
+    val icon: Bitmap?
+)

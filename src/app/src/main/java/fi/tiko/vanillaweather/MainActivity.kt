@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.text.DateFormat
@@ -24,10 +25,11 @@ class MainActivity : AppCompatActivity() {
 
     private val userCities = mutableListOf("Tampere")
 
-    private lateinit var text: TextView
+    private lateinit var weatherType: TextView
     private lateinit var locationText: TextView
     private lateinit var lastUpdatedText: TextView
     private lateinit var temperature: TextView
+    private lateinit var windSpeedText: TextView
     private lateinit var icon: ImageView
 
     private fun checkLocationPermissions() {
@@ -54,10 +56,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        text = findViewById(R.id.text)
+        weatherType = findViewById(R.id.weatherType)
         locationText = findViewById(R.id.locationText)
         lastUpdatedText = findViewById(R.id.lastUpdatedText)
         temperature = findViewById(R.id.temperature)
+        windSpeedText = findViewById(R.id.windSpeed)
         icon = findViewById(R.id.weatherIcon)
 
         checkLocationPermissions()
@@ -70,15 +73,23 @@ class MainActivity : AppCompatActivity() {
         val date = Date(response.dt!! * 1000)
         val weatherAttr = response.weather?.get(0)
 
-        lastUpdatedText.text = "Updated: ${DateFormat.getInstance().format(date)}"
+        lastUpdatedText.text =
+            getString(R.string.last_updated, DateFormat.getInstance().format(date))
         locationText.text = response.name
         val temp = response.main?.temp?.roundToInt()
-        temperature.text = "$temp °C"
-        text.text = "${weatherAttr?.main}"
+        val windSpeed = response.wind?.speed
+        temperature.text = getString(R.string.temperature, temp)
+        windSpeedText.text = getString(R.string.wind_speed, windSpeed)
+        weatherType.text = "${weatherAttr?.main}"
 
         if (weather.icon != null) {
             icon.setImageBitmap(weather.icon)
         }
+    }
+
+    private fun updateForecasts(forecasts: List<ForecastWeather>) {
+        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
     @SuppressLint("MissingPermission")
@@ -88,14 +99,19 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 if (location != null) {
-                    getWeatherAsync(
-                        this,
-                        APILocation.Location(location.latitude, location.longitude),
-                        ::updateUI
-                    )
+                    val query = APIQuery.Location(location.latitude, location.longitude)
+                    getWeatherAsync(this, query, ::updateUI)
+                    getForecastAsync(this, query, ::updateForecasts)
                 } else {
                     Log.d("MainActivity", "Location was null.")
-                    getWeatherAsync(this, APILocation.Name(userCities[0]), ::updateUI)
+                    getWeatherAsync(this, APIQuery.Name(userCities[0])) { weather ->
+                        updateUI(weather)
+                        // Retrieve the forecasts using the location from the response
+                        if(weather.response.coord != null) {
+                            val query = APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
+                            getForecastAsync(this, query, ::updateForecasts)
+                        }
+                    }
                 }
             }
             .addOnFailureListener {
