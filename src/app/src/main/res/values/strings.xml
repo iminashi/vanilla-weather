@@ -5,5 +5,6 @@
     <string name="icon">Weather Icon</string>
     <string name="last_updated">Updated: %1$s</string>
     <string name="temperature">%1$d °C</string>
+    <string name="temperature_range">%1$d - %2$d °C</string>
     <string name="wind_speed">Wind: %1$.1f m/s</string>
 </resources>

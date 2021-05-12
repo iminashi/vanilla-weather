@@ -33,12 +33,13 @@ class ForecastAdapter(private val dataSet: List<ForecastWeather>) :
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val weather = dataSet[position]
-        val date = Date(weather.forecast.dt!! * 1000)
+        val date = epochToDate(weather.forecast.dt!!)
 
         viewHolder.textViewDay.text = SimpleDateFormat("EE", Locale.US).format(date)
-        val min = weather.forecast.temp?.min?.roundToInt().toString()
-        val max = weather.forecast.temp?.max?.roundToInt().toString()
-        viewHolder.textViewTempRange.text = "$min - $max °C"
+        val min = weather.forecast.temp?.min?.roundToInt()
+        val max = weather.forecast.temp?.max?.roundToInt()
+        viewHolder.textViewTempRange.text =
+            viewHolder.itemView.context.getString(R.string.temperature_range, min, max)
         viewHolder.textWeatherType.text = weather.forecast.weather?.get(0)?.main
         viewHolder.imageViewIcon.setImageBitmap(weather.icon)
     }

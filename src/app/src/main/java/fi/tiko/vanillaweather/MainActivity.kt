@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI(weather: Weather) {
         val response = weather.response
-        val date = Date(response.dt!! * 1000)
+        val date = epochToDate(response.dt!!)
         val weatherAttr = response.weather?.get(0)
 
         val updated = SimpleDateFormat("dd.M. HH.mm", Locale.getDefault()).format(date)
@@ -93,6 +93,17 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
+    private  fun getWeatherForCity(cityName: String) {
+        getWeatherAsync(this, APIQuery.Name(cityName)) { weather ->
+            updateUI(weather)
+            // Retrieve the forecasts using the location from the response
+            if(weather.response.coord != null) {
+                val query = APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
+                getForecastsAsync(this, query, ::updateForecasts)
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private fun getUserLocationWeather() {
         if (!hasLocationPermissions) return
@@ -105,15 +116,7 @@ class MainActivity : AppCompatActivity() {
                     getForecastsAsync(this, query, ::updateForecasts)
                 } else {
                     Log.d("MainActivity", "Location was null.")
-
-                    getWeatherAsync(this, APIQuery.Name(userCities[0])) { weather ->
-                        updateUI(weather)
-                        // Retrieve the forecasts using the location from the response
-                        if(weather.response.coord != null) {
-                            val query = APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
-                            getForecastsAsync(this, query, ::updateForecasts)
-                        }
-                    }
+                    getWeatherForCity(userCities[0])
                 }
             }
             .addOnFailureListener {
