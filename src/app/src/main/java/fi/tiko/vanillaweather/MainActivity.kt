@@ -13,7 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -73,8 +73,8 @@ class MainActivity : AppCompatActivity() {
         val date = Date(response.dt!! * 1000)
         val weatherAttr = response.weather?.get(0)
 
-        lastUpdatedText.text =
-            getString(R.string.last_updated, DateFormat.getInstance().format(date))
+        val updated = SimpleDateFormat("dd.M. HH.mm", Locale.getDefault()).format(date)
+        lastUpdatedText.text = getString(R.string.last_updated, updated)
         locationText.text = response.name
         val temp = response.main?.temp?.roundToInt()
         val windSpeed = response.wind?.speed
@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
                     getForecastAsync(this, query, ::updateForecasts)
                 } else {
                     Log.d("MainActivity", "Location was null.")
+
                     getWeatherAsync(this, APIQuery.Name(userCities[0])) { weather ->
                         updateUI(weather)
                         // Retrieve the forecasts using the location from the response
