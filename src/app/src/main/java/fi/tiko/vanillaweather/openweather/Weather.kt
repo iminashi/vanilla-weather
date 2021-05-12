@@ -19,7 +19,7 @@ fun getWeatherAsync(context: Activity, apiQuery: APIQuery, callback: (Weather) -
         val query = createQueryString(apiQuery)
         val apiKey = context.getString(R.string.openweathermap_api_key)
         val response = callApi(query, apiKey)
-        val icon = tryGetIcon(response.weather, "4x")
+        val icon = tryGetIcon(response.weather, 4)
 
         context.runOnUiThread {
             callback(Weather(response, icon))

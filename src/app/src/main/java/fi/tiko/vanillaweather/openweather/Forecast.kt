@@ -27,7 +27,7 @@ fun getForecastsAsync(
             if (response.daily != null) {
                 val nextDays = response.daily.subList(1, response.daily.size)
                 nextDays.map { forecast ->
-                    ForecastWeather(forecast, tryGetIcon(forecast.weather, "2x"))
+                    ForecastWeather(forecast, tryGetIcon(forecast.weather, 2))
                 }
             } else {
                 null
