@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import fi.tiko.vanillaweather.openweather.ForecastWeather
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt

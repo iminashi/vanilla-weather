@@ -15,6 +15,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.text.SimpleDateFormat
 import java.util.*
+import fi.tiko.vanillaweather.openweather.*
 import kotlin.math.roundToInt
 
 const val LOCATION_REQUEST_CODE = 333
@@ -101,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                 if (location != null) {
                     val query = APIQuery.Location(location.latitude, location.longitude)
                     getWeatherAsync(this, query, ::updateUI)
-                    getForecastAsync(this, query, ::updateForecasts)
+                    getForecastsAsync(this, query, ::updateForecasts)
                 } else {
                     Log.d("MainActivity", "Location was null.")
 
@@ -110,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                         // Retrieve the forecasts using the location from the response
                         if(weather.response.coord != null) {
                             val query = APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
-                            getForecastAsync(this, query, ::updateForecasts)
+                            getForecastsAsync(this, query, ::updateForecasts)
                         }
                     }
                 }

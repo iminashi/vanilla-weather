@@ -1,7 +1,12 @@
-package fi.tiko.vanillaweather
+package fi.tiko.vanillaweather.openweather
 
 import android.graphics.Bitmap
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+sealed class APIQuery {
+    class Location(val latitude: Double, val longitude: Double) : APIQuery()
+    class Name(val name: String) : APIQuery()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Coordinates(
