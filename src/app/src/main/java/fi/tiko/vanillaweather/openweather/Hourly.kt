@@ -3,6 +3,7 @@ package fi.tiko.vanillaweather.openweather
 import android.app.Activity
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.tiko.vanillaweather.R
+import java.lang.Exception
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -17,20 +18,29 @@ private fun callApi(query: String, apiKey: String): HourlyAPIResponse {
 fun getHourlyForecastsAsync(
     context: Activity,
     apiQuery: APIQuery.Location,
-    callback: (List<HourlyWeather>) -> Unit
+    onSuccess: (List<HourlyWeather>) -> Unit,
+    onFailure: (String) -> Unit,
 ) {
     thread {
-        val query = createQueryString(apiQuery)
-        val apiKey = context.getString(R.string.openweathermap_api_key)
-        val response = callApi(query, apiKey)
-        val hourly =
-            response.hourly?.map { forecast ->
-                HourlyWeather(forecast, tryGetIcon(forecast.weather, 2))
-            }
+        try {
+            val query = createQueryString(apiQuery)
+            val apiKey = context.getString(R.string.openweathermap_api_key)
+            val response = callApi(query, apiKey)
+            val hourly =
+                response.hourly?.map { forecast ->
+                    HourlyWeather(forecast, tryGetIcon(forecast.weather, 2))
+                }
 
-        context.runOnUiThread {
-            if (hourly != null) {
-                callback(hourly)
+            context.runOnUiThread {
+                if (hourly != null) {
+                    onSuccess(hourly)
+                } else {
+                    onFailure("Hourly forecast did not contain expected data.")
+                }
+            }
+        } catch (e: Exception) {
+            context.runOnUiThread {
+                onFailure(e.message ?: "Fetching weather information failed.")
             }
         }
     }

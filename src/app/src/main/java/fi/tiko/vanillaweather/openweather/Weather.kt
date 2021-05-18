@@ -3,6 +3,7 @@ package fi.tiko.vanillaweather.openweather
 import android.app.Activity
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.tiko.vanillaweather.R
+import java.lang.Exception
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -14,15 +15,26 @@ private fun callApi(query: String, apiKey: String): WeatherAPIResponse {
     return ObjectMapper().readValue(url, WeatherAPIResponse::class.java)
 }
 
-fun getWeatherAsync(context: Activity, apiQuery: APIQuery, callback: (Weather) -> Unit) {
+fun getWeatherAsync(
+    context: Activity,
+    apiQuery: APIQuery,
+    onSuccess: (Weather) -> Unit,
+    onFailure: (String) -> Unit
+) {
     thread {
-        val query = createQueryString(apiQuery)
-        val apiKey = context.getString(R.string.openweathermap_api_key)
-        val response = callApi(query, apiKey)
-        val icon = tryGetIcon(response.weather, 4)
+        try {
+            val query = createQueryString(apiQuery)
+            val apiKey = context.getString(R.string.openweathermap_api_key)
+            val response = callApi(query, apiKey)
+            val icon = tryGetIcon(response.weather, 4)
 
-        context.runOnUiThread {
-            callback(Weather(response, icon))
+            context.runOnUiThread {
+                onSuccess(Weather(response, icon))
+            }
+        } catch (e: Exception) {
+            context.runOnUiThread {
+                onFailure(e.message ?: "Fetching weather information failed.")
+            }
         }
     }
 }

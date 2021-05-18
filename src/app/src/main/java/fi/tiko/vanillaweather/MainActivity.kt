@@ -8,9 +8,7 @@ import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
@@ -38,6 +36,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var windSpeedText: TextView
     private lateinit var icon: ImageView
     private lateinit var hourlyForecastButton: Button
+    private lateinit var errorLayout: LinearLayout
+    private lateinit var mainWeatherLayout: LinearLayout
+    private lateinit var errorMessage: TextView
+    private lateinit var loadingSpinner: ProgressBar
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
@@ -70,13 +72,28 @@ class MainActivity : AppCompatActivity() {
         windSpeedText = findViewById(R.id.windSpeed)
         icon = findViewById(R.id.weatherIcon)
         hourlyForecastButton = findViewById(R.id.buttonHourlyForecast)
+        errorLayout = findViewById(R.id.errorLayout)
+        mainWeatherLayout = findViewById(R.id.mainWeatherLayout)
+        errorMessage = findViewById(R.id.errorMessage)
+        loadingSpinner = findViewById(R.id.loadingSpinner)
 
         checkLocationPermissions()
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
+    private fun handleError(message: String) {
+        loadingSpinner.isVisible = false
+        errorLayout.isVisible = true
+        mainWeatherLayout.isVisible = false
+        errorMessage.text = message
+    }
+
     private fun updateUI(weather: Weather) {
+        loadingSpinner.isVisible = false
+        errorLayout.isVisible = false
+        mainWeatherLayout.isVisible = true
+
         val response = weather.response
         val date = epochToDate(response.dt!!)
         val weatherAttr = response.weather?.get(0)
@@ -100,18 +117,20 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
-    private fun getWeatherForCity(cityName: String) {
-        getWeatherAsync(this, APIQuery.Name(cityName)) { weather ->
-            updateUI(weather)
-            // Retrieve the forecasts using the location from the response
-            if (weather.response.coord != null) {
-                val query =
-                    APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
-                currentLocation = query
-                hourlyForecastButton.isVisible = true
-                getForecastsAsync(this, query, ::updateForecasts)
-            }
+    private fun weatherForCityCallback(weather: Weather) {
+        updateUI(weather)
+        // Retrieve the forecasts using the location from the response
+        if (weather.response.coord != null) {
+            val query =
+                APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
+            currentLocation = query
+            hourlyForecastButton.isVisible = true
+            getForecastsAsync(this, query, ::updateForecasts, ::handleError)
         }
+    }
+
+    private fun getWeatherForCity(cityName: String) {
+        getWeatherAsync(this, APIQuery.Name(cityName), ::weatherForCityCallback, ::handleError)
     }
 
     @SuppressLint("MissingPermission")
@@ -124,8 +143,8 @@ class MainActivity : AppCompatActivity() {
                     val query = APIQuery.Location(location.latitude, location.longitude)
                     currentLocation = query
                     hourlyForecastButton.isVisible = true
-                    getWeatherAsync(this, query, ::updateUI)
-                    getForecastsAsync(this, query, ::updateForecasts)
+                    getWeatherAsync(this, query, ::updateUI, ::handleError)
+                    getForecastsAsync(this, query, ::updateForecasts, ::handleError)
                 } else {
                     Log.d("MainActivity", "Location was null.")
                     getWeatherForCity(userCities[0])
@@ -165,5 +184,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("lon", currentLocation!!.longitude)
             startActivity(intent)
         }
+    }
+
+    fun retry(view: View) {
+        errorLayout.isVisible = false
+        loadingSpinner.isVisible = true
+        getUserLocationWeather()
     }
 }

@@ -8,4 +8,5 @@
     <string name="temperature_range">%1$d - %2$d °C</string>
     <string name="wind_speed">Wind: %1$.1f m/s</string>
     <string name="hourly_forecast">Hourly Forecast</string>
+    <string name="retry">Retry</string>
 </resources>
