@@ -1,8 +1,10 @@
 package fi.tiko.vanillaweather.openweather
 
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import fi.tiko.vanillaweather.R
 import java.lang.Exception
 import java.net.URL
 import java.util.*
@@ -17,7 +19,7 @@ private val iconCache = mutableMapOf<String, Bitmap>()
 
 private fun tryDownloadIcon(iconName: String): Bitmap? {
     return try {
-        val url = URL("https://openweathermap.org/img/wn/$iconName.png")
+        val url = URL("$ICONS_BASE_URL/$iconName.png")
         val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
         iconCache[iconName] = bmp
         bmp
@@ -28,7 +30,7 @@ private fun tryDownloadIcon(iconName: String): Bitmap? {
 }
 
 fun tryGetIcon(weather: List<WeatherAttributes>?, size: Int): Bitmap? {
-    val weatherAttr = weather?.get(0)
+    val weatherAttr = weather?.getOrNull(0)
     return if (weatherAttr?.icon != null) {
         val iconName = "${weatherAttr.icon}@${size}x"
         iconCache.getOrElse(iconName) { tryDownloadIcon(iconName) }

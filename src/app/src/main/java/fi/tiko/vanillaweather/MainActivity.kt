@@ -2,14 +2,18 @@ package fi.tiko.vanillaweather
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -25,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var hasLocationPermissions: Boolean = false
 
     private val userCities = mutableListOf("Tampere")
+    private var currentLocation: APIQuery.Location? = null
 
     private lateinit var weatherType: TextView
     private lateinit var locationText: TextView
@@ -32,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var temperature: TextView
     private lateinit var windSpeedText: TextView
     private lateinit var icon: ImageView
+    private lateinit var hourlyForecastButton: Button
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
@@ -63,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         temperature = findViewById(R.id.temperature)
         windSpeedText = findViewById(R.id.windSpeed)
         icon = findViewById(R.id.weatherIcon)
+        hourlyForecastButton = findViewById(R.id.buttonHourlyForecast)
 
         checkLocationPermissions()
 
@@ -93,12 +100,15 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
-    private  fun getWeatherForCity(cityName: String) {
+    private fun getWeatherForCity(cityName: String) {
         getWeatherAsync(this, APIQuery.Name(cityName)) { weather ->
             updateUI(weather)
             // Retrieve the forecasts using the location from the response
-            if(weather.response.coord != null) {
-                val query = APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
+            if (weather.response.coord != null) {
+                val query =
+                    APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
+                currentLocation = query
+                hourlyForecastButton.isVisible = true
                 getForecastsAsync(this, query, ::updateForecasts)
             }
         }
@@ -112,6 +122,8 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { location: Location? ->
                 if (location != null) {
                     val query = APIQuery.Location(location.latitude, location.longitude)
+                    currentLocation = query
+                    hourlyForecastButton.isVisible = true
                     getWeatherAsync(this, query, ::updateUI)
                     getForecastsAsync(this, query, ::updateForecasts)
                 } else {
@@ -143,5 +155,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    // Opens the hourly forecast activity.
+    fun goToHourlyForecast(view: View) {
+        if (currentLocation != null) {
+            val intent = Intent(this, HourlyForecastActivity::class.java)
+            intent.putExtra("lat", currentLocation!!.latitude)
+            intent.putExtra("lon", currentLocation!!.longitude)
+            startActivity(intent)
+        }
     }
 }

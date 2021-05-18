@@ -7,7 +7,7 @@
     android:gravity="center_vertical">
 
     <TextView
-        android:id="@+id/textViewDay"
+        android:id="@+id/textViewHourlyTime"
         android:layout_width="70dp"
         android:layout_height="match_parent"
         android:gravity="center"
@@ -33,7 +33,13 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/textViewTempRange"
+            android:id="@+id/textViewTemperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textViewWind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />

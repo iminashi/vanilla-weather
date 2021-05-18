@@ -7,7 +7,7 @@ import java.net.URL
 import kotlin.concurrent.thread
 
 private fun createAPIURL(query: String, apiKey: String): URL =
-    URL("$BASE_URL/weather?$query&units=metric&appid=$apiKey")
+    URL("$API_BASE_URL/weather?$query&units=metric&appid=$apiKey")
 
 private fun callApi(query: String, apiKey: String): WeatherAPIResponse {
     val url = createAPIURL(query, apiKey)
