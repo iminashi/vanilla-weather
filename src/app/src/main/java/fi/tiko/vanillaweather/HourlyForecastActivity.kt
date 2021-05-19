@@ -1,8 +1,8 @@
 package fi.tiko.vanillaweather
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import fi.tiko.vanillaweather.openweather.APIQuery
@@ -34,5 +34,7 @@ class HourlyForecastActivity : AppCompatActivity() {
         if (!latitude.isNaN() && !longitude.isNaN()) {
             getHourlyForecastsAsync(this, APIQuery.Location(latitude, longitude), ::updateUI, ::handleError)
         }
+
+        supportActionBar?.title = getString(R.string.hourly_forecast)
     }
 }

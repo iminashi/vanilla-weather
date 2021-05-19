@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".CitiesActivity">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cityList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="2dp"
+        app:layoutManager="LinearLayoutManager" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="8dp"
+        android:clickable="true"
+        android:contentDescription="@string/add_city"
+        android:focusable="true"
+        android:onClick="showDialog"
+        app:fabSize="normal"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+</LinearLayout>

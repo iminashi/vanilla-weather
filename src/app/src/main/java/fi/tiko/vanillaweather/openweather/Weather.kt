@@ -3,6 +3,7 @@ package fi.tiko.vanillaweather.openweather
 import android.app.Activity
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.tiko.vanillaweather.R
+import java.io.FileNotFoundException
 import java.lang.Exception
 import java.net.URL
 import kotlin.concurrent.thread
@@ -32,8 +33,16 @@ fun getWeatherAsync(
                 onSuccess(Weather(response, icon))
             }
         } catch (e: Exception) {
+            val message =
+                when (e) {
+                    // 404 causes a FileNotFoundException
+                    is FileNotFoundException -> {
+                        "The city was not found"
+                    }
+                    else -> e.message ?: "Fetching weather information failed."
+                }
             context.runOnUiThread {
-                onFailure(e.message ?: "Fetching weather information failed.")
+                onFailure(message)
             }
         }
     }

@@ -1,10 +1,8 @@
 package fi.tiko.vanillaweather.openweather
 
-import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import fi.tiko.vanillaweather.R
 import java.lang.Exception
 import java.net.URL
 import java.util.*
@@ -12,7 +10,12 @@ import java.util.*
 fun createQueryString(apiQuery: APIQuery) =
     when (apiQuery) {
         is APIQuery.Location -> "lat=${apiQuery.latitude}&lon=${apiQuery.longitude}"
-        is APIQuery.Name -> "q=${apiQuery.name.lowercase(Locale.ROOT)}"
+        is APIQuery.Name -> {
+            val q = apiQuery.name
+                .lowercase(Locale.ROOT)
+                .filter { it.isLetterOrDigit() || it == ' ' }
+                .replace(" ", "%20")
+            "q=$q" }
     }
 
 private val iconCache = mutableMapOf<String, Bitmap>()

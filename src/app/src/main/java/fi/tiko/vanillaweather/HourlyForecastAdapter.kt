@@ -44,7 +44,7 @@ class HourlyForecastAdapter(private val dataSet: List<HourlyWeather>) :
                 weather.forecast.temp?.roundToInt()
             )
         viewHolder.textWeatherType.text =
-            weather.forecast.weather?.get(0)?.description?.replaceFirstChar { it.uppercase() }
+            capitalize(weather.forecast.weather?.get(0)?.description)
         viewHolder.textViewWind.text =
             viewHolder.itemView.context.getString(R.string.wind_speed, weather.forecast.wind_speed)
         viewHolder.imageViewIcon.setImageBitmap(weather.icon)

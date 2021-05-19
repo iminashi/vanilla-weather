@@ -9,4 +9,6 @@
     <string name="wind_speed">Wind: %1$.1f m/s</string>
     <string name="hourly_forecast">Hourly Forecast</string>
     <string name="retry">Retry</string>
+    <string name="add_city">Add City</string>
+    <string name="remove">Remove</string>
 </resources>

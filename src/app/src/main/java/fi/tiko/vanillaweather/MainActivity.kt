@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +28,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var hasLocationPermissions: Boolean = false
 
-    private val userCities = mutableListOf("Tampere")
+    private var userCities = mutableListOf("Tampere", "Turku", "Ivalo", "London", "Kyoto", "Dallas", "New York")
+    private var selectedCity = -1
     private var currentLocation: APIQuery.Location? = null
 
     private lateinit var weatherType: TextView
@@ -40,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainWeatherLayout: LinearLayout
     private lateinit var errorMessage: TextView
     private lateinit var loadingSpinner: ProgressBar
+    private lateinit var recyclerView: RecyclerView
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
@@ -61,6 +65,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.settings -> {
+                val intent = Intent(this, CitiesActivity::class.java)
+                intent.putExtra("cities", userCities.toTypedArray())
+                intent.putExtra("selectedCity", selectedCity)
+                startActivityForResult(intent, 777)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 777 && resultCode == RESULT_OK) {
+            data?.extras?.getStringArray("cities")?.toMutableList()?.let {
+                userCities = it
+            }
+            data?.extras?.getInt("selectedCity")?.let {
+                Log.d("MainActivity", "Selected city: $it.")
+                selectedCity = it
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -76,16 +112,34 @@ class MainActivity : AppCompatActivity() {
         mainWeatherLayout = findViewById(R.id.mainWeatherLayout)
         errorMessage = findViewById(R.id.errorMessage)
         loadingSpinner = findViewById(R.id.loadingSpinner)
+        recyclerView = findViewById(R.id.recycler_view)
 
         checkLocationPermissions()
+
+        savedInstanceState?.run {
+            getStringArrayList("cities")?.let { userCities = it.toMutableList() }
+            selectedCity = getInt("selectedCity", -1)
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("selectedCity", selectedCity)
+        outState.putStringArray("cities", userCities.toTypedArray())
+
+        Log.d("MainActivity", "onSaveInstanceState")
+
+        super.onSaveInstanceState(outState)
+    }
+
     private fun handleError(message: String) {
+        Log.d("MainActivity", "Failed: $message")
         loadingSpinner.isVisible = false
         errorLayout.isVisible = true
         mainWeatherLayout.isVisible = false
+        hourlyForecastButton.isVisible = false
+        recyclerView.isVisible = false
         errorMessage.text = message
     }
 
@@ -93,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         loadingSpinner.isVisible = false
         errorLayout.isVisible = false
         mainWeatherLayout.isVisible = true
+        recyclerView.isVisible = true
 
         val response = weather.response
         val date = epochToDate(response.dt!!)
@@ -113,12 +168,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateForecasts(forecasts: List<ForecastWeather>) {
-        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
     private fun weatherForCityCallback(weather: Weather) {
         updateUI(weather)
+
         // Retrieve the forecasts using the location from the response
         if (weather.response.coord != null) {
             val query =
@@ -158,7 +213,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        getUserLocationWeather()
+        if (selectedCity != -1 && selectedCity < userCities.size) {
+            getWeatherForCity(userCities[selectedCity])
+        } else {
+            getUserLocationWeather()
+        }
     }
 
     override fun onRequestPermissionsResult(

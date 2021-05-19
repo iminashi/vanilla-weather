@@ -9,15 +9,6 @@
     tools:context=".HourlyForecastActivity">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hourly_forecast"
-        android:padding="4dp"
-        android:background="@color/green_700"
-        android:textColor="@color/white"
-        android:textSize="20sp" />
-
-    <TextView
         android:id="@+id/hourlyErrorText"
         android:visibility="gone"
         android:layout_width="match_parent"
