@@ -35,12 +35,13 @@ class CitiesActivity : AppCompatActivity() {
         val editText = layout.findViewById<EditText>(R.id.editCityName)
 
         builder.setView(layout)
+            .setTitle("Add City")
             // Add action buttons
             .setPositiveButton(
                 "Add"
             ) { _, _ ->
                 if (editText.text.isNotEmpty()) {
-                    cities.add(editText.text.toString())
+                    cities.add(editText.text.toString().trim())
                 }
             }
             .setNegativeButton(

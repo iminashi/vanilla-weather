@@ -148,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         errorLayout.isVisible = false
         mainWeatherLayout.isVisible = true
         recyclerView.isVisible = true
+        hourlyForecastButton.isVisible = true
 
         val response = weather.response
         val date = epochToDate(response.dt!!)
@@ -179,7 +180,6 @@ class MainActivity : AppCompatActivity() {
             val query =
                 APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
             currentLocation = query
-            hourlyForecastButton.isVisible = true
             getForecastsAsync(this, query, ::updateForecasts, ::handleError)
         }
     }
@@ -197,7 +197,6 @@ class MainActivity : AppCompatActivity() {
                 if (location != null) {
                     val query = APIQuery.Location(location.latitude, location.longitude)
                     currentLocation = query
-                    hourlyForecastButton.isVisible = true
                     getWeatherAsync(this, query, ::updateUI, ::handleError)
                     getForecastsAsync(this, query, ::updateForecasts, ::handleError)
                 } else {
