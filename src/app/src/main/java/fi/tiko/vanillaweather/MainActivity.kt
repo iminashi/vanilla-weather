@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var hasLocationPermissions: Boolean = false
     private var lastUpdated: Date? = null
 
-    private var userCities =  mutableListOf("Tampere", "New York", "Tokyo")
+    private var userCities = mutableListOf("Tampere", "New York", "Tokyo")
     private var selectedCityIndex = -1
     private var currentLocation: APIQuery.Location? = null
 
@@ -151,7 +151,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadPreferences() {
-        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        val sharedPref =
+            getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE)
+
         selectedCityIndex = sharedPref.getInt(SELECTED_CITY, -1)
         val savedCities = sharedPref.getString(CITIES, null)
         if (savedCities != null) {
@@ -290,7 +292,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun shouldUpdate(): Boolean {
-        if(lastUpdated != null) {
+        if (lastUpdated != null) {
             val now = Calendar.getInstance().time
             // Check if 5 minutes have passed since the last update
             return (now.time - lastUpdated!!.time >= 300000)
@@ -300,7 +302,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if(shouldUpdate()) {
+        if (shouldUpdate()) {
             updateWeatherInfo()
         }
     }
@@ -315,21 +317,5 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun retryClicked(view: View) = updateWeatherInfo()
-
     fun forceUpdate(view: View) = updateWeatherInfo()
-
-    private fun savePreferences() {
-        val sharedPref = getPreferences(Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putInt(SELECTED_CITY, selectedCityIndex)
-            putString(CITIES, userCities.joinToString(separator = ","))
-            commit()
-        }
-    }
-
-    override fun onDestroy() {
-        savePreferences()
-        super.onDestroy()
-    }
 }

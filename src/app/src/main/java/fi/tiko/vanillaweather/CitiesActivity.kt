@@ -1,5 +1,6 @@
 package fi.tiko.vanillaweather
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -113,5 +114,21 @@ class CitiesActivity : AppCompatActivity() {
     fun useLocationLayoutClicked(view: View) {
         switchUseLocation.isChecked = !switchUseLocation.isChecked
         useLocationClicked(view)
+    }
+
+    private fun savePreferences() {
+        val sharedPref =
+            getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE)
+
+        with(sharedPref.edit()) {
+            putInt(SELECTED_CITY, adapter.selectedIndex)
+            putString(CITIES, cities.joinToString(separator = ","))
+            commit()
+        }
+    }
+
+    override fun onPause() {
+        savePreferences()
+        super.onPause()
     }
 }
