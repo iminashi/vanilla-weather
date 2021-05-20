@@ -17,6 +17,7 @@ class CitiesActivity : AppCompatActivity() {
     private lateinit var adapter: CityAdapter
     private lateinit var switchUseLocation: SwitchCompat
 
+    // Changes the state of the use location switch depending on the selection.
     private fun selectionChanged(selectedIndex: Int) {
         switchUseLocation.isChecked = selectedIndex == -1
     }
@@ -27,10 +28,12 @@ class CitiesActivity : AppCompatActivity() {
 
         switchUseLocation = findViewById(R.id.switchUseLocation)
 
+        // Get the values from the intent
         cities = intent.getStringArrayExtra(CITIES)?.toMutableList() ?: mutableListOf()
         val selectedCity = intent.getIntExtra(SELECTED_CITY, -1)
         selectionChanged(selectedCity)
 
+        // Set up the recycler view
         val citiesList = findViewById<RecyclerView>(R.id.cityList)
         adapter = CityAdapter(cities, ::selectionChanged, selectedCity)
         citiesList.adapter = adapter
@@ -38,7 +41,7 @@ class CitiesActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.cities)
     }
 
-    fun showDialog(view: View) {
+    fun showAddCityDialog(view: View) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
 
@@ -53,8 +56,9 @@ class CitiesActivity : AppCompatActivity() {
             .setPositiveButton(
                 "Add"
             ) { _, _ ->
-                if (editText.text.isNotEmpty()) {
-                    cities.add(editText.text.toString().trim())
+                val cityName = editText.text.toString().trim()
+                if (cityName.isNotEmpty() && !cities.contains(cityName)) {
+                    cities.add(cityName)
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -76,35 +80,35 @@ class CitiesActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         setIntentResult()
-
         super.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            // The back button in the action bar was pressed
+            // The back button in the action bar was pressed.
             android.R.id.home -> {
                 setIntentResult()
                 finish()
                 return true
             }
         }
+
         return super.onOptionsItemSelected(item)
     }
 
     fun useLocationClicked(view: View) {
         if (switchUseLocation.isChecked) {
-            // Clear the selected city when the switch is checked
+            // Clear the selected city when the switch is checked.
             adapter.selectedIndex = -1
             adapter.notifyDataSetChanged()
         } else if (adapter.selectedIndex == -1 && cities.size > 0) {
-            // Select the first city when the switch is unchecked
+            // Select the first city when the switch is unchecked.
             adapter.selectedIndex = 0
             adapter.notifyDataSetChanged()
         }
     }
 
-    // Toggle the location switch when the layout is clicked.
+    // Toggle the location switch when its parent layout is clicked.
     // Needed for setting the switch to the left side of its text.
     fun useLocationLayoutClicked(view: View) {
         switchUseLocation.isChecked = !switchUseLocation.isChecked

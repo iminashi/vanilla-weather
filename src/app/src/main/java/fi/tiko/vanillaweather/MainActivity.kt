@@ -2,6 +2,7 @@ package fi.tiko.vanillaweather
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -17,7 +18,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import fi.tiko.vanillaweather.adapters.ForecastAdapter
+import fi.tiko.vanillaweather.adapters.DailyForecastAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 import fi.tiko.vanillaweather.openweather.*
@@ -26,10 +27,10 @@ import kotlin.math.roundToInt
 class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var hasLocationPermissions: Boolean = false
+    private var lastUpdated: Date? = null
 
-    private var userCities =
-        mutableListOf("Tampere", "Turku", "Ivalo", "London", "Kyoto", "Dallas", "New York")
-    private var selectedCity = -1
+    private var userCities =  mutableListOf("Tampere", "New York", "Tokyo")
+    private var selectedCityIndex = -1
     private var currentLocation: APIQuery.Location? = null
 
     private lateinit var weatherType: TextView
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var retryButton: Button
     private lateinit var loadingSpinner: ProgressBar
     private lateinit var recyclerView: RecyclerView
+    private lateinit var forceUpdateIcon: ImageView
 
     // Checks if the app has location permissions allowed.
     private fun checkLocationPermissions() {
@@ -81,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 if (hasLocationPermissions) {
                     getUserLocationWeather()
-                } else {
+                } else if (selectedCityIndex == -1) {
                     showErrorMessage(
                         "Cannot use the current location. Please select a city to use from the cities list.",
                         canRetry = false
@@ -105,7 +107,7 @@ class MainActivity : AppCompatActivity() {
             R.id.menu_cities -> {
                 val intent = Intent(this, CitiesActivity::class.java)
                 intent.putExtra(CITIES, userCities.toTypedArray())
-                intent.putExtra(SELECTED_CITY, selectedCity)
+                intent.putExtra(SELECTED_CITY, selectedCityIndex)
                 startActivityForResult(intent, CITIES_INTENT_CODE)
                 true
             }
@@ -122,7 +124,11 @@ class MainActivity : AppCompatActivity() {
                 userCities = it
             }
             data?.extras?.getInt(SELECTED_CITY)?.let {
-                selectedCity = it
+                // Force an update if the selected city index changed.
+                if (selectedCityIndex != it) {
+                    lastUpdated = null
+                }
+                selectedCityIndex = it
             }
         }
     }
@@ -141,13 +147,17 @@ class MainActivity : AppCompatActivity() {
         mainWeatherLayout = findViewById(R.id.mainWeatherLayout)
         loadingSpinner = findViewById(R.id.loadingSpinner)
         recyclerView = findViewById(R.id.recycler_view)
+        forceUpdateIcon = findViewById(R.id.forceUpdateIcon)
     }
 
-    private fun loadSavedInstanceState(savedInstanceState: Bundle?) =
-        savedInstanceState?.run {
-            getStringArrayList(CITIES)?.let { userCities = it.toMutableList() }
-            selectedCity = getInt(SELECTED_CITY, -1)
+    private fun loadPreferences() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        selectedCityIndex = sharedPref.getInt(SELECTED_CITY, -1)
+        val savedCities = sharedPref.getString(CITIES, null)
+        if (savedCities != null) {
+            userCities = savedCities.split(",").toMutableList()
         }
+    }
 
     private fun createLocationClient() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -159,18 +169,8 @@ class MainActivity : AppCompatActivity() {
 
         assignViewElements()
         checkLocationPermissions()
-        loadSavedInstanceState(savedInstanceState)
+        loadPreferences()
         createLocationClient()
-    }
-
-    // Preserves the selected city and the cities list.
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(SELECTED_CITY, selectedCity)
-        outState.putStringArray(CITIES, userCities.toTypedArray())
-
-        Log.d("MainActivity", "onSaveInstanceState")
-
-        super.onSaveInstanceState(outState)
     }
 
     // Hides the weather information UI elements.
@@ -178,6 +178,7 @@ class MainActivity : AppCompatActivity() {
         mainWeatherLayout.isVisible = false
         hourlyForecastButton.isVisible = false
         recyclerView.isVisible = false
+        forceUpdateIcon.isVisible = false
     }
 
     private fun showErrorMessage(message: String, canRetry: Boolean) {
@@ -200,12 +201,13 @@ class MainActivity : AppCompatActivity() {
         mainWeatherLayout.isVisible = true
         recyclerView.isVisible = true
         hourlyForecastButton.isVisible = true
+        forceUpdateIcon.isVisible = true
 
         val response = weather.response
-        val date = epochToDate(response.dt!!)
+        lastUpdated = epochToDate(response.dt!!)
         val weatherAttr = response.weather?.get(0)
 
-        val updated = SimpleDateFormat("dd.M. HH.mm", Locale.getDefault()).format(date)
+        val updated = SimpleDateFormat("dd.M. HH.mm", Locale.getDefault()).format(lastUpdated!!)
         lastUpdatedText.text = getString(R.string.last_updated, updated)
         locationText.text = response.name
         val temp = response.main?.temp?.roundToInt()
@@ -220,7 +222,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateForecasts(forecasts: List<ForecastWeather>) {
-        recyclerView.adapter = ForecastAdapter(forecasts)
+        recyclerView.adapter = DailyForecastAdapter(forecasts)
     }
 
     // Updates the UI for the weather for the city and fetches the daily forecasts.
@@ -270,7 +272,7 @@ class MainActivity : AppCompatActivity() {
 
     // Returns true if a city has been selected.
     private fun isCitySelected() =
-        selectedCity != -1 && selectedCity < userCities.size
+        selectedCityIndex != -1 && selectedCityIndex < userCities.size
 
     // Fetches the weather information for the selected city or the current location.
     private fun updateWeatherInfo() {
@@ -281,15 +283,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (isCitySelected()) {
-            getWeatherForCity(userCities[selectedCity])
+            getWeatherForCity(userCities[selectedCityIndex])
         } else if (hasLocationPermissions) {
             getUserLocationWeather()
         }
     }
 
+    private fun shouldUpdate(): Boolean {
+        if(lastUpdated != null) {
+            val now = Calendar.getInstance().time
+            // Check if 5 minutes have passed since the last update
+            return (now.time - lastUpdated!!.time >= 300000)
+        }
+        return true
+    }
+
     override fun onResume() {
         super.onResume()
-        updateWeatherInfo()
+        if(shouldUpdate()) {
+            updateWeatherInfo()
+        }
     }
 
     // Opens the hourly forecast activity.
@@ -303,4 +316,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun retryClicked(view: View) = updateWeatherInfo()
+
+    fun forceUpdate(view: View) = updateWeatherInfo()
+
+    private fun savePreferences() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putInt(SELECTED_CITY, selectedCityIndex)
+            putString(CITIES, userCities.joinToString(separator = ","))
+            commit()
+        }
+    }
+
+    override fun onDestroy() {
+        savePreferences()
+        super.onDestroy()
+    }
 }

@@ -11,21 +11,21 @@
     tools:context=".MainActivity">
 
     <ProgressBar
-        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
         android:id="@+id/loadingSpinner"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_weight="1"
+        android:gravity="center"
         android:indeterminate="true" />
 
     <LinearLayout
         android:id="@+id/errorLayout"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,9 +36,9 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_margin="4dp"
                 android:contentDescription="@string/error"
-                android:layout_gravity="center"
                 app:srcCompat="@android:drawable/stat_notify_error" />
 
             <TextView
@@ -52,18 +52,18 @@
             android:id="@+id/retryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/retry"
-            android:onClick="retryClicked"/>
+            android:onClick="retryClicked"
+            android:text="@string/retry" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/mainWeatherLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:background="@color/transparent_bg"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/locationText"
@@ -134,12 +134,21 @@
 
         <TextView
             android:id="@+id/lastUpdatedText"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
-            android:layout_weight="1"
             android:textAlignment="viewStart"
             android:textSize="12sp" />
+
+        <ImageView
+            android:id="@+id/forceUpdateIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:visibility="gone"
+            android:onClick="forceUpdate"
+            app:srcCompat="@android:drawable/stat_notify_sync_noanim"
+            android:contentDescription="@string/update_weather_information" />
 
         <TextView
             android:layout_width="0dp"

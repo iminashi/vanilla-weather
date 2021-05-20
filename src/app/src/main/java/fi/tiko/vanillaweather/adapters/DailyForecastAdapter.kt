@@ -7,14 +7,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import fi.tiko.vanillaweather.R
+import fi.tiko.vanillaweather.capitalize
 import fi.tiko.vanillaweather.epochToDate
 import fi.tiko.vanillaweather.openweather.ForecastWeather
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-class ForecastAdapter(private val dataSet: List<ForecastWeather>) :
-    RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
+class DailyForecastAdapter(private val dataSet: List<ForecastWeather>) :
+    RecyclerView.Adapter<DailyForecastAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewDay: TextView = view.findViewById(R.id.textViewDay)
@@ -42,7 +43,7 @@ class ForecastAdapter(private val dataSet: List<ForecastWeather>) :
         val max = weather.forecast.temp?.max?.roundToInt()
         viewHolder.textViewTempRange.text =
             viewHolder.itemView.context.getString(R.string.temperature_range, min, max)
-        viewHolder.textWeatherType.text = weather.forecast.weather?.get(0)?.main
+        viewHolder.textWeatherType.text = capitalize(weather.forecast.weather?.get(0)?.description)
         viewHolder.imageViewIcon.setImageBitmap(weather.icon)
     }
 

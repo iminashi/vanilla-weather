@@ -44,7 +44,7 @@
         android:clickable="true"
         android:contentDescription="@string/add_city"
         android:focusable="true"
-        android:onClick="showDialog"
+        android:onClick="showAddCityDialog"
         app:fabSize="normal"
         app:srcCompat="@android:drawable/ic_input_add" />
 
