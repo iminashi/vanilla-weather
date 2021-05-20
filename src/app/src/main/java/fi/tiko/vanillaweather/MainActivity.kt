@@ -17,18 +17,18 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import fi.tiko.vanillaweather.adapters.ForecastAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 import fi.tiko.vanillaweather.openweather.*
 import kotlin.math.roundToInt
 
-const val LOCATION_REQUEST_CODE = 333
-
 class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var hasLocationPermissions: Boolean = false
 
-    private var userCities = mutableListOf("Tampere", "Turku", "Ivalo", "London", "Kyoto", "Dallas", "New York")
+    private var userCities =
+        mutableListOf("Tampere", "Turku", "Ivalo", "London", "Kyoto", "Dallas", "New York")
     private var selectedCity = -1
     private var currentLocation: APIQuery.Location? = null
 
@@ -42,9 +42,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorLayout: LinearLayout
     private lateinit var mainWeatherLayout: LinearLayout
     private lateinit var errorMessage: TextView
+    private lateinit var retryButton: Button
     private lateinit var loadingSpinner: ProgressBar
     private lateinit var recyclerView: RecyclerView
 
+    // Checks if the app has location permissions allowed.
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -65,6 +67,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Responds to the location permission request.
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        Log.d("MainActivity", "onRequestPermissionsResult")
+
+        when (requestCode) {
+            LOCATION_REQUEST_CODE -> {
+                hasLocationPermissions = (grantResults.isNotEmpty()
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                if (hasLocationPermissions) {
+                    getUserLocationWeather()
+                } else {
+                    showErrorMessage(
+                        "Cannot use the current location. Please select a city to use from the cities list.",
+                        canRetry = false
+                    )
+                }
+            }
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    // Creates the main menu.
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -72,11 +101,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.settings -> {
+            // Transition into the cities list activity.
+            R.id.menu_cities -> {
                 val intent = Intent(this, CitiesActivity::class.java)
-                intent.putExtra("cities", userCities.toTypedArray())
-                intent.putExtra("selectedCity", selectedCity)
-                startActivityForResult(intent, 777)
+                intent.putExtra(CITIES, userCities.toTypedArray())
+                intent.putExtra(SELECTED_CITY, selectedCity)
+                startActivityForResult(intent, CITIES_INTENT_CODE)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -86,21 +116,18 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 777 && resultCode == RESULT_OK) {
-            data?.extras?.getStringArray("cities")?.toMutableList()?.let {
+        // Update the cities list and the selected city index.
+        if (requestCode == CITIES_INTENT_CODE && resultCode == RESULT_OK) {
+            data?.extras?.getStringArray(CITIES)?.toMutableList()?.let {
                 userCities = it
             }
-            data?.extras?.getInt("selectedCity")?.let {
-                Log.d("MainActivity", "Selected city: $it.")
+            data?.extras?.getInt(SELECTED_CITY)?.let {
                 selectedCity = it
             }
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+    private fun assignViewElements() {
         weatherType = findViewById(R.id.weatherType)
         locationText = findViewById(R.id.locationText)
         lastUpdatedText = findViewById(R.id.lastUpdatedText)
@@ -109,40 +136,64 @@ class MainActivity : AppCompatActivity() {
         icon = findViewById(R.id.weatherIcon)
         hourlyForecastButton = findViewById(R.id.buttonHourlyForecast)
         errorLayout = findViewById(R.id.errorLayout)
-        mainWeatherLayout = findViewById(R.id.mainWeatherLayout)
         errorMessage = findViewById(R.id.errorMessage)
+        retryButton = findViewById(R.id.retryButton)
+        mainWeatherLayout = findViewById(R.id.mainWeatherLayout)
         loadingSpinner = findViewById(R.id.loadingSpinner)
         recyclerView = findViewById(R.id.recycler_view)
+    }
 
-        checkLocationPermissions()
-
+    private fun loadSavedInstanceState(savedInstanceState: Bundle?) =
         savedInstanceState?.run {
-            getStringArrayList("cities")?.let { userCities = it.toMutableList() }
-            selectedCity = getInt("selectedCity", -1)
+            getStringArrayList(CITIES)?.let { userCities = it.toMutableList() }
+            selectedCity = getInt(SELECTED_CITY, -1)
         }
 
+    private fun createLocationClient() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        assignViewElements()
+        checkLocationPermissions()
+        loadSavedInstanceState(savedInstanceState)
+        createLocationClient()
+    }
+
+    // Preserves the selected city and the cities list.
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt("selectedCity", selectedCity)
-        outState.putStringArray("cities", userCities.toTypedArray())
+        outState.putInt(SELECTED_CITY, selectedCity)
+        outState.putStringArray(CITIES, userCities.toTypedArray())
 
         Log.d("MainActivity", "onSaveInstanceState")
 
         super.onSaveInstanceState(outState)
     }
 
-    private fun handleError(message: String) {
-        Log.d("MainActivity", "Failed: $message")
-        loadingSpinner.isVisible = false
-        errorLayout.isVisible = true
+    // Hides the weather information UI elements.
+    private fun hideWeatherUI() {
         mainWeatherLayout.isVisible = false
         hourlyForecastButton.isVisible = false
         recyclerView.isVisible = false
+    }
+
+    private fun showErrorMessage(message: String, canRetry: Boolean) {
+        loadingSpinner.isVisible = false
+        hideWeatherUI()
+
+        errorLayout.isVisible = true
+        retryButton.isVisible = canRetry
+
         errorMessage.text = message
     }
 
+    private fun handleError(message: String) =
+        showErrorMessage(message, canRetry = true)
+
+    // Updates the UI with the weather information.
     private fun updateUI(weather: Weather) {
         loadingSpinner.isVisible = false
         errorLayout.isVisible = false
@@ -172,10 +223,11 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = ForecastAdapter(forecasts)
     }
 
+    // Updates the UI for the weather for the city and fetches the daily forecasts.
     private fun weatherForCityCallback(weather: Weather) {
         updateUI(weather)
 
-        // Retrieve the forecasts using the location from the response
+        // Retrieve the forecasts using the location information from the response
         if (weather.response.coord != null) {
             val query =
                 APIQuery.Location(weather.response.coord.lat!!, weather.response.coord.lon!!)
@@ -185,7 +237,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getWeatherForCity(cityName: String) {
-        getWeatherAsync(this, APIQuery.Name(cityName), ::weatherForCityCallback, ::handleError)
+        getWeatherAsync(this, APIQuery.Name(cityName), ::weatherForCityCallback) { errorMessage ->
+            // Disable the retry button if the city was not found
+            val canRetry = !errorMessage.contains("city")
+            showErrorMessage(errorMessage, canRetry)
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -201,52 +257,50 @@ class MainActivity : AppCompatActivity() {
                     getForecastsAsync(this, query, ::updateForecasts, ::handleError)
                 } else {
                     Log.d("MainActivity", "Location was null.")
-                    getWeatherForCity(userCities[0])
+                    showErrorMessage(
+                        "Unable to detect the current location. Please select a city to use in the cities list.",
+                        canRetry = false
+                    )
                 }
             }
             .addOnFailureListener {
-                Log.d("MainActivity", "Getting location failed.")
+                showErrorMessage("Getting the current location failed.", canRetry = true)
             }
     }
 
-    override fun onResume() {
-        super.onResume()
+    // Returns true if a city has been selected.
+    private fun isCitySelected() =
+        selectedCity != -1 && selectedCity < userCities.size
 
-        if (selectedCity != -1 && selectedCity < userCities.size) {
+    // Fetches the weather information for the selected city or the current location.
+    private fun updateWeatherInfo() {
+        if (isCitySelected() || hasLocationPermissions) {
+            hideWeatherUI()
+            errorLayout.isVisible = false
+            loadingSpinner.isVisible = true
+        }
+
+        if (isCitySelected()) {
             getWeatherForCity(userCities[selectedCity])
-        } else {
+        } else if (hasLocationPermissions) {
             getUserLocationWeather()
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            LOCATION_REQUEST_CODE -> {
-                hasLocationPermissions = (grantResults.isNotEmpty()
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                getUserLocationWeather()
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    override fun onResume() {
+        super.onResume()
+        updateWeatherInfo()
     }
 
     // Opens the hourly forecast activity.
     fun goToHourlyForecast(view: View) {
         if (currentLocation != null) {
             val intent = Intent(this, HourlyForecastActivity::class.java)
-            intent.putExtra("lat", currentLocation!!.latitude)
-            intent.putExtra("lon", currentLocation!!.longitude)
+            intent.putExtra(LATITUDE, currentLocation!!.latitude)
+            intent.putExtra(LONGITUDE, currentLocation!!.longitude)
             startActivity(intent)
         }
     }
 
-    fun retry(view: View) {
-        errorLayout.isVisible = false
-        loadingSpinner.isVisible = true
-        getUserLocationWeather()
-    }
+    fun retryClicked(view: View) = updateWeatherInfo()
 }

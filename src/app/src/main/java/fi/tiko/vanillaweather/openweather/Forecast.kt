@@ -46,7 +46,7 @@ fun getForecastsAsync(
             }
         } catch (e: Exception) {
             context.runOnUiThread {
-                onFailure(e.message ?: "Fetching weather information failed.")
+                onFailure("Fetching the weather information failed.")
             }
         }
     }

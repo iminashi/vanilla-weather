@@ -5,6 +5,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import fi.tiko.vanillaweather.adapters.HourlyForecastAdapter
 import fi.tiko.vanillaweather.openweather.APIQuery
 import fi.tiko.vanillaweather.openweather.HourlyWeather
 import fi.tiko.vanillaweather.openweather.getHourlyForecastsAsync
@@ -29,8 +30,8 @@ class HourlyForecastActivity : AppCompatActivity() {
 
         errorText = findViewById(R.id.hourlyErrorText)
 
-        val latitude = intent.getDoubleExtra("lat", Double.NaN)
-        val longitude = intent.getDoubleExtra("lon", Double.NaN)
+        val latitude = intent.getDoubleExtra(LATITUDE, Double.NaN)
+        val longitude = intent.getDoubleExtra(LONGITUDE, Double.NaN)
         if (!latitude.isNaN() && !longitude.isNaN()) {
             getHourlyForecastsAsync(this, APIQuery.Location(latitude, longitude), ::updateUI, ::handleError)
         }

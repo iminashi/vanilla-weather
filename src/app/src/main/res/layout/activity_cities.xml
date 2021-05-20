@@ -7,12 +7,32 @@
     android:orientation="vertical"
     tools:context=".CitiesActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="useLocationLayoutClicked"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchUseLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="useLocationClicked" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/use_current_location" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cityList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_margin="2dp"
+        android:layout_weight="1"
         app:layoutManager="LinearLayoutManager" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

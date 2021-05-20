@@ -4,7 +4,7 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/settings"
+        android:id="@+id/menu_cities"
         android:title="@string/cities"
         app:showAsAction="ifRoom"/>
 </menu>

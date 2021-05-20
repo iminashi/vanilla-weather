@@ -15,6 +15,8 @@
         android:id="@+id/loadingSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_weight="1"
         android:indeterminate="true" />
 
     <LinearLayout
@@ -25,18 +27,33 @@
         android:layout_margin="4dp"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/errorMessage"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/transparent_bg"
-            android:textSize="20sp" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:contentDescription="@string/error"
+                android:layout_gravity="center"
+                app:srcCompat="@android:drawable/stat_notify_error" />
+
+            <TextView
+                android:id="@+id/errorMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp" />
+        </LinearLayout>
 
         <Button
+            android:id="@+id/retryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/retry"
-            android:onClick="retry"/>
+            android:onClick="retryClicked"/>
     </LinearLayout>
 
     <LinearLayout

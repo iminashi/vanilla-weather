@@ -37,9 +37,9 @@ fun getWeatherAsync(
                 when (e) {
                     // 404 causes a FileNotFoundException
                     is FileNotFoundException -> {
-                        "The city was not found"
+                        "The city was not found."
                     }
-                    else -> e.message ?: "Fetching weather information failed."
+                    else -> "Fetching the weather information failed."
                 }
             context.runOnUiThread {
                 onFailure(message)

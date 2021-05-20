@@ -12,4 +12,6 @@
     <string name="add_city">Add City</string>
     <string name="remove">Remove</string>
     <string name="cities">Cities</string>
+    <string name="use_current_location">Use Current Location</string>
+    <string name="error">Error</string>
 </resources>

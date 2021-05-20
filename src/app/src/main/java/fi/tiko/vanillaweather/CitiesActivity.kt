@@ -8,21 +8,34 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
+import fi.tiko.vanillaweather.adapters.CityAdapter
 
 class CitiesActivity : AppCompatActivity() {
     private lateinit var cities: MutableList<String>
     private lateinit var adapter: CityAdapter
+    private lateinit var switchUseLocation: SwitchCompat
+
+    private fun selectionChanged(selectedIndex: Int) {
+        switchUseLocation.isChecked = selectedIndex == -1
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cities)
 
-        cities = intent.getStringArrayExtra("cities")?.toMutableList() ?: mutableListOf()
-        val selectedCity = intent.getIntExtra("selectedCity", -1)
+        switchUseLocation = findViewById(R.id.switchUseLocation)
+
+        cities = intent.getStringArrayExtra(CITIES)?.toMutableList() ?: mutableListOf()
+        val selectedCity = intent.getIntExtra(SELECTED_CITY, -1)
+        selectionChanged(selectedCity)
+
         val citiesList = findViewById<RecyclerView>(R.id.cityList)
-        adapter = CityAdapter(cities, selectedCity)
+        adapter = CityAdapter(cities, ::selectionChanged, selectedCity)
         citiesList.adapter = adapter
+
+        supportActionBar?.title = getString(R.string.cities)
     }
 
     fun showDialog(view: View) {
@@ -42,6 +55,7 @@ class CitiesActivity : AppCompatActivity() {
             ) { _, _ ->
                 if (editText.text.isNotEmpty()) {
                     cities.add(editText.text.toString().trim())
+                    adapter.notifyDataSetChanged()
                 }
             }
             .setNegativeButton(
@@ -55,18 +69,20 @@ class CitiesActivity : AppCompatActivity() {
 
     private fun setIntentResult() {
         val intent = Intent()
-        intent.putExtra("selectedCity", adapter.selectedIndex)
-        intent.putExtra("cities", cities.toTypedArray())
+        intent.putExtra(SELECTED_CITY, adapter.selectedIndex)
+        intent.putExtra(CITIES, cities.toTypedArray())
         setResult(RESULT_OK, intent)
     }
 
     override fun onBackPressed() {
         setIntentResult()
+
         super.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            // The back button in the action bar was pressed
             android.R.id.home -> {
                 setIntentResult()
                 finish()
@@ -74,5 +90,24 @@ class CitiesActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun useLocationClicked(view: View) {
+        if (switchUseLocation.isChecked) {
+            // Clear the selected city when the switch is checked
+            adapter.selectedIndex = -1
+            adapter.notifyDataSetChanged()
+        } else if (adapter.selectedIndex == -1 && cities.size > 0) {
+            // Select the first city when the switch is unchecked
+            adapter.selectedIndex = 0
+            adapter.notifyDataSetChanged()
+        }
+    }
+
+    // Toggle the location switch when the layout is clicked.
+    // Needed for setting the switch to the left side of its text.
+    fun useLocationLayoutClicked(view: View) {
+        switchUseLocation.isChecked = !switchUseLocation.isChecked
+        useLocationClicked(view)
     }
 }
