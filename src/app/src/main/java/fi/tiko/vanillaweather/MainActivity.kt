@@ -172,8 +172,8 @@ class MainActivity : AppCompatActivity() {
         selectedCityIndex = sharedPref.getInt(SELECTED_CITY, -1)
         val savedCities = sharedPref.getString(CITIES, null)
         if (savedCities != null) {
-            // The city names are saved as a comma delimited string.
-            userCities = savedCities.split(",").toMutableList()
+            // The city names are saved as a single string divided by a separator.
+            userCities = savedCities.split(CITY_SEPARATOR).toMutableList()
         }
     }
 

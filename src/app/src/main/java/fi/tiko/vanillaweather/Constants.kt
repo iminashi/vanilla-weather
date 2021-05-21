@@ -14,3 +14,5 @@ const val LOCATION_REQUEST_CODE = 333
 
 // The time between updates in milliseconds (5 minutes).
 const val UPDATE_INTERVAL_MS = 300000
+
+const val CITY_SEPARATOR = "|"

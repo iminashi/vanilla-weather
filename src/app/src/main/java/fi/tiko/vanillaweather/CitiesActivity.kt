@@ -83,8 +83,8 @@ class CitiesActivity : AppCompatActivity() {
             .setPositiveButton(
                 getString(R.string.add)
             ) { _, _ ->
-                // Trim whitespace from the entered text.
-                val cityName = editText.text.toString().trim()
+                // Trim whitespace from the entered text and remove the separator used when saving the list.
+                val cityName = editText.text.toString().trim().replace(CITY_SEPARATOR, "")
                 if (cityName.isNotEmpty() && !cities.contains(cityName)) {
                     cities.add(cityName)
                     adapter.notifyDataSetChanged()
@@ -154,7 +154,7 @@ class CitiesActivity : AppCompatActivity() {
 
         with(sharedPref.edit()) {
             putInt(SELECTED_CITY, adapter.selectedIndex)
-            putString(CITIES, cities.joinToString(separator = ","))
+            putString(CITIES, cities.joinToString(separator = CITY_SEPARATOR))
             commit()
         }
     }
