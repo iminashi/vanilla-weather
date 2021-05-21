@@ -35,9 +35,18 @@ class CitiesActivity : AppCompatActivity() {
 
         switchUseLocation = findViewById(R.id.switchUseLocation)
 
-        // Get the needed values from the intent data.
-        cities = intent.getStringArrayExtra(CITIES)?.toMutableList() ?: mutableListOf()
-        val selectedCity = intent.getIntExtra(SELECTED_CITY, -1)
+        val selectedCity =
+            if (savedInstanceState != null) {
+                // Get the values from the saved state.
+                savedInstanceState.run {
+                    getStringArray(CITIES).let { cities = it?.toMutableList() ?: mutableListOf() }
+                    getInt(SELECTED_CITY, -1)
+                }
+            } else {
+                // Get the values from the intent data.
+                cities = intent.getStringArrayExtra(CITIES)?.toMutableList() ?: mutableListOf()
+                intent.getIntExtra(SELECTED_CITY, -1)
+            }
         selectionChanged(selectedCity)
 
         // Set up the RecyclerView.
@@ -46,6 +55,14 @@ class CitiesActivity : AppCompatActivity() {
         citiesList.adapter = adapter
 
         supportActionBar?.title = getString(R.string.cities)
+    }
+
+    // Preserves the selected city and the cities list.
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(SELECTED_CITY, adapter.selectedIndex)
+        outState.putStringArray(CITIES, cities.toTypedArray())
+
+        super.onSaveInstanceState(outState)
     }
 
     // Shows a dialog where a city name can be entered.
@@ -109,14 +126,17 @@ class CitiesActivity : AppCompatActivity() {
 
     // Handles clicks on the "use current location" switch.
     fun useLocationClicked(view: View) {
+        fun setSelectedIndex(index: Int) {
+            adapter.selectedIndex = index
+            adapter.notifyDataSetChanged()
+        }
+
         if (switchUseLocation.isChecked) {
             // Clear the selected city when the switch is checked.
-            adapter.selectedIndex = -1
-            adapter.notifyDataSetChanged()
+            setSelectedIndex(-1)
         } else if (adapter.selectedIndex == -1 && cities.size > 0) {
             // Select the first city when the switch is unchecked.
-            adapter.selectedIndex = 0
-            adapter.notifyDataSetChanged()
+            setSelectedIndex(0)
         }
     }
 
