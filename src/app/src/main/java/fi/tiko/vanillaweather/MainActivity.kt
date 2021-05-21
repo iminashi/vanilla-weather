@@ -93,13 +93,15 @@ class MainActivity : AppCompatActivity() {
                 hasLocationPermissions = (grantResults.isNotEmpty()
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 
-                if (hasLocationPermissions) {
-                    getUserLocationWeather()
-                } else if (!isCitySelected()) {
-                    showErrorMessage(
-                        "Cannot use the current location. Please select a city to use from the cities list.",
-                        canRetry = false
-                    )
+                if (!isCitySelected()) {
+                    if (hasLocationPermissions) {
+                        getUserLocationWeather()
+                    } else {
+                        showErrorMessage(
+                            "Cannot use the current location. Please select a city to use from the cities list.",
+                            canRetry = false
+                        )
+                    }
                 }
             }
         }
