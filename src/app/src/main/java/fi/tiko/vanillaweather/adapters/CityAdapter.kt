@@ -66,6 +66,6 @@ class CityAdapter(
         viewHolder.buttonRemove.isVisible = dataSet.size != 1
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    // Return the size of the dataset (invoked by the layout manager).
     override fun getItemCount() = dataSet.size
 }

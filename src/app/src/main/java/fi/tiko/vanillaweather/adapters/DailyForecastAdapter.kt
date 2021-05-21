@@ -53,6 +53,6 @@ class DailyForecastAdapter(private val dataSet: List<DailyWeather>) :
         viewHolder.imageViewIcon.setImageBitmap(weather.icon)
     }
 
-    // Return the size of your dataset (invoked by the layout manager).
+    // Return the size of the dataset (invoked by the layout manager).
     override fun getItemCount() = dataSet.size
 }
