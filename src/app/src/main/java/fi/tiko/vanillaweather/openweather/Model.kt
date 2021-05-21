@@ -1,6 +1,5 @@
 package fi.tiko.vanillaweather.openweather
 
-import android.graphics.Bitmap
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 // Union type for calling the API either with a coordinate or a place name.
@@ -42,8 +41,6 @@ data class WeatherAPIResponse(
     val wind: WindAttributes? = null
 )
 
-data class Weather(val response: WeatherAPIResponse, val icon: Bitmap? = null)
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DailyTemp(val min: Double? = null, val max: Double? = null)
 
@@ -55,13 +52,8 @@ data class DailyForecast(
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ForecastAPIResponse(
+data class DailyForecastAPIResponse(
     val daily: MutableList<DailyForecast>? = null
-)
-
-data class ForecastWeather(
-    val forecast: DailyForecast,
-    val icon: Bitmap?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -74,11 +66,6 @@ data class HourlyForecast(
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class HourlyAPIResponse(
+data class HourlyForecastAPIResponse(
     val hourly: MutableList<HourlyForecast>? = null
-)
-
-data class HourlyWeather(
-    val forecast: HourlyForecast,
-    val icon: Bitmap?
 )

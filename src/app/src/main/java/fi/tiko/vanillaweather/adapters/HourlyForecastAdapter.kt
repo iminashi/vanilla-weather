@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
+// RecyclerView adapter for hourly forecasts.
 class HourlyForecastAdapter(private val dataSet: List<HourlyWeather>) :
     RecyclerView.Adapter<HourlyForecastAdapter.ViewHolder>() {
 
@@ -25,16 +26,16 @@ class HourlyForecastAdapter(private val dataSet: List<HourlyWeather>) :
         val imageViewIcon: ImageView = view.findViewById(R.id.forecastIcon)
     }
 
-    // Create new views (invoked by the layout manager)
+    // Create new views (invoked by the layout manager).
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        // Create a new view, which defines the UI of the list item
+        // Create a new view, which defines the UI of the list item.
         val view = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.hourly_item, viewGroup, false)
 
         return ViewHolder(view)
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
+    // Replace the contents of a view (invoked by the layout manager).
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val weather = dataSet[position]
         val date = epochToDate(weather.forecast.dt!!)
@@ -53,6 +54,6 @@ class HourlyForecastAdapter(private val dataSet: List<HourlyWeather>) :
         viewHolder.imageViewIcon.setImageBitmap(weather.icon)
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    // Return the size of your dataset (invoked by the layout manager).
     override fun getItemCount() = dataSet.size
 }

@@ -11,9 +11,12 @@
     <string name="retry">Retry</string>
     <string name="add_city">Add City</string>
     <string name="remove">Remove</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
     <string name="cities">Cities</string>
     <string name="use_current_location">Use Current Location</string>
     <string name="error">Error</string>
     <string name="update_weather_information">Update weather information</string>
     <string name="preference_file">fi.tiko.vanillaweather.preferences</string>
+    <string name="city_name">City Name</string>
 </resources>

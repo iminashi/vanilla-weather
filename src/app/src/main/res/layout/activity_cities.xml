@@ -10,9 +10,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="2dp"
         android:onClick="useLocationLayoutClicked"
-        android:orientation="horizontal"
-        android:layout_margin="2dp">
+        android:orientation="horizontal">
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchUseLocation"
@@ -23,8 +23,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="@string/use_current_location" />
+            android:text="@string/use_current_location"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -39,7 +39,7 @@
         android:id="@+id/floatingActionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
+        android:layout_gravity="bottom|end"
         android:layout_margin="8dp"
         android:clickable="true"
         android:contentDescription="@string/add_city"

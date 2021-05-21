@@ -13,12 +13,18 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
 import fi.tiko.vanillaweather.adapters.CityAdapter
 
+// Activity for editing the list of cities.
 class CitiesActivity : AppCompatActivity() {
+    // The editable list of city names.
     private lateinit var cities: MutableList<String>
+
+    // Adapter for city names used by the RecyclerView.
     private lateinit var adapter: CityAdapter
+
+    // The switch UI element for setting whether to use the current location or not.
     private lateinit var switchUseLocation: SwitchCompat
 
-    // Changes the state of the use location switch depending on the selection.
+    // Changes the state of the "use current location" switch depending on the selection.
     private fun selectionChanged(selectedIndex: Int) {
         switchUseLocation.isChecked = selectedIndex == -1
     }
@@ -29,12 +35,12 @@ class CitiesActivity : AppCompatActivity() {
 
         switchUseLocation = findViewById(R.id.switchUseLocation)
 
-        // Get the values from the intent
+        // Get the needed values from the intent data.
         cities = intent.getStringArrayExtra(CITIES)?.toMutableList() ?: mutableListOf()
         val selectedCity = intent.getIntExtra(SELECTED_CITY, -1)
         selectionChanged(selectedCity)
 
-        // Set up the recycler view
+        // Set up the RecyclerView.
         val citiesList = findViewById<RecyclerView>(R.id.cityList)
         adapter = CityAdapter(cities, ::selectionChanged, selectedCity)
         citiesList.adapter = adapter
@@ -42,21 +48,25 @@ class CitiesActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.cities)
     }
 
+    // Shows a dialog where a city name can be entered.
     fun showAddCityDialog(view: View) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
+        // Inflate and set the layout for the dialog.
+        // Pass null as the parent view because its going in the dialog layout.
         val layout = inflater.inflate(R.layout.dialog_add_city, null)
+        // Get a reference to the EditText in the dialog.
         val editText = layout.findViewById<EditText>(R.id.editCityName)
 
+        // Build and show the dialog.
         builder.setView(layout)
-            .setTitle("Add City")
-            // Add action buttons
+            .setTitle(getString(R.string.add_city))
+            // Add action buttons.
             .setPositiveButton(
-                "Add"
+                getString(R.string.add)
             ) { _, _ ->
+                // Trim whitespace from the entered text.
                 val cityName = editText.text.toString().trim()
                 if (cityName.isNotEmpty() && !cities.contains(cityName)) {
                     cities.add(cityName)
@@ -64,14 +74,15 @@ class CitiesActivity : AppCompatActivity() {
                 }
             }
             .setNegativeButton(
-                "Cancel"
+                getString(R.string.cancel)
             ) { dialog, _ ->
                 dialog.cancel()
             }
-
-        builder.create().show()
+            .create()
+            .show()
     }
 
+    // Adds the city list and the selected city index into the result intent.
     private fun setIntentResult() {
         val intent = Intent()
         intent.putExtra(SELECTED_CITY, adapter.selectedIndex)
@@ -84,19 +95,19 @@ class CitiesActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    // Handles back button presses on the action bar.
+    override fun onOptionsItemSelected(item: MenuItem) =
         when (item.itemId) {
             // The back button in the action bar was pressed.
             android.R.id.home -> {
                 setIntentResult()
                 finish()
-                return true
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
 
-        return super.onOptionsItemSelected(item)
-    }
-
+    // Handles clicks on the "use current location" switch.
     fun useLocationClicked(view: View) {
         if (switchUseLocation.isChecked) {
             // Clear the selected city when the switch is checked.
@@ -116,6 +127,7 @@ class CitiesActivity : AppCompatActivity() {
         useLocationClicked(view)
     }
 
+    // Saves the city list and the selected city index into the shared preferences file.
     private fun savePreferences() {
         val sharedPref =
             getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE)

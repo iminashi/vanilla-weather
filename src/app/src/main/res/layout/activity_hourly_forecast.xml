@@ -4,16 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/waterdrops"
+    android:orientation="vertical"
     tools:context=".HourlyForecastActivity">
 
     <TextView
         android:id="@+id/hourlyErrorText"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/transparent_bg" />
+        android:background="@color/transparent_bg"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/hourly_recycler_view"
