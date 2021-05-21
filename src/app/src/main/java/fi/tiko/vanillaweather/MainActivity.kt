@@ -86,8 +86,6 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        Log.d("MainActivity", "onRequestPermissionsResult")
-
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
                 hasLocationPermissions = (grantResults.isNotEmpty()
