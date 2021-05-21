@@ -51,3 +51,7 @@ Running the app requires an OpenWeatherMap API key that is not included in the G
 ### Known Bugs
 
 - The user can enter a place name that does not exist, in which case an error message will be displayed when the weather is fetched.
+
+### Screencast
+
+[![Screencast](http://img.youtube.com/vi/n7UUfvVXCWQ/0.jpg)](http://www.youtube.com/watch?v=n7UUfvVXCWQ "Screencast")
