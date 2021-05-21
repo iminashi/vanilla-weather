@@ -317,14 +317,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Returns true if the weather information should be fetched from the API.
-    private fun shouldUpdate(): Boolean {
+    private fun shouldUpdate() =
         if (lastUpdated != null) {
             val now = Calendar.getInstance().time
             // Check if enough time has passed since the last update.
-            return (now.time - lastUpdated!!.time >= UPDATE_INTERVAL_MS)
+            now.time - lastUpdated!!.time >= UPDATE_INTERVAL_MS
+        } else {
+            true
         }
-        return true
-    }
 
     override fun onResume() {
         super.onResume()
