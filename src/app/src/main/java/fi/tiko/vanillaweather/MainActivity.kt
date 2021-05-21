@@ -31,14 +31,14 @@ class MainActivity : AppCompatActivity() {
     // Set to true if the app has location permissions.
     private var hasLocationPermissions = false
 
-    // The date of the weather information, gotten from the API response.
-    private var lastUpdated: Date? = null
-
     // A list of cities that the user can edit.
     private var userCities = mutableListOf("Tampere", "New York", "Tokyo")
 
     // The index of the currently selected city (-1 = use current location).
     private var selectedCityIndex = -1
+
+    // The date of the weather information, read from the API response.
+    private var lastUpdated: Date? = null
 
     // The location for which the weather has been fetched.
     private var currentLocation: APIQuery.Location? = null
